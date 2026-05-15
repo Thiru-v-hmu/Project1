@@ -1,7 +1,7 @@
 <<<<<<< HEAD
 # Project1
 
-thosvsjvsdvbjbvjsdbvjv ds bdjvsdvjkvdvjkdsnjvsdjvksdnjdncdsv 
+i dont want any bull shits
 =======
 
 # Project1
