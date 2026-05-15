@@ -1,1 +1,90 @@
-gi
+#include <btBulletDynamicsCommon.h>
+#include <iostream>
+
+int main() {
+    // 1. Setup core Bullet components
+    btBroadphaseInterface* broadphase =
+        new btDbvtBroadphase();
+
+    btDefaultCollisionConfiguration* collisionConfig =
+        new btDefaultCollisionConfiguration();
+
+    btCollisionDispatcher* dispatcher =
+        new btCollisionDispatcher(collisionConfig);
+
+    btSequentialImpulseConstraintSolver* solver =
+        new btSequentialImpulseConstraintSolver();
+
+    // 2. Create the Physics World
+    btDiscreteDynamicsWorld* world =
+        new btDiscreteDynamicsWorld(
+            dispatcher, broadphase, solver, collisionConfig
+        );
+
+    // 3. Set Gravity (Earth: -9.81 m/s²)
+    world->setGravity(btVector3(0, -9.81f, 0));
+
+    // 4. Create Ground Plane
+    btCollisionShape* groundShape =
+        new btStaticPlaneShape(btVector3(0, 1, 0), 0);
+
+    btDefaultMotionState* groundMotionState =
+        new btDefaultMotionState(
+            btTransform(btQuaternion(0,0,0,1),
+                        btVector3(0,-1,0))
+        );
+
+    btRigidBody::btRigidBodyConstructionInfo
+        groundCI(0, groundMotionState, groundShape,
+                 btVector3(0,0,0));
+
+    btRigidBody* groundBody = new btRigidBody(groundCI);
+    world->addRigidBody(groundBody);
+
+    // 5. Create a Falling Sphere (Robot Link simulation)
+    btCollisionShape* sphereShape =
+        new btSphereShape(1);  // radius = 1m
+
+    btDefaultMotionState* sphereMotionState =
+        new btDefaultMotionState(
+            btTransform(btQuaternion(0,0,0,1),
+                        btVector3(0, 10, 0))  // Start at height 10
+        );
+
+    btScalar mass = 1.0f;
+    btVector3 inertia(0, 0, 0);
+    sphereShape->calculateLocalInertia(mass, inertia);
+
+    btRigidBody::btRigidBodyConstructionInfo
+        sphereCI(mass, sphereMotionState, sphereShape, inertia);
+
+    btRigidBody* sphereBody = new btRigidBody(sphereCI);
+    world->addRigidBody(sphereBody);
+
+    // 6. Run Simulation (300 steps)
+    for (int i = 0; i < 300; i++) {
+        world->stepSimulation(1.0f / 60.0f, 10);
+
+        btTransform trans;
+        sphereBody->getMotionState()->getWorldTransform(trans);
+
+        std::cout << "Step " << i
+                  << " | Height: "
+                  << trans.getOrigin().getY() << std::endl;
+    }
+
+    // 7. Cleanup
+    delete sphereBody;
+    delete sphereMotionState;
+    delete sphereShape;
+    delete groundBody;
+    delete groundMotionState;
+    delete groundShape;
+    delete world;
+    delete solver;
+    delete dispatcher;
+    delete collisionConfig;
+    delete broadphase;
+
+    return 0;
+}
