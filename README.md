@@ -1,4 +1,4 @@
 
 # Project1
 
-physics stimulation
+Physics stimulation
